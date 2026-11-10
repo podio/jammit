@@ -102,7 +102,8 @@ pipeline {
 
                         KNOWN_FINDINGS="${repoPath}/.trufflehog-known-findings"
                         if [ -f "\$KNOWN_FINDINGS" ]; then
-                            # Entries are "<full commit sha> <file path> <detector name>"; matching findings are dropped
+                            # Entries are "<full commit sha> <file path|*> <detector name>"; matching findings are dropped.
+                            # "*" matches any file, for findings TruffleHog reports without a file path.
                             awk -v kf="\$KNOWN_FINDINGS" '
                                 BEGIN {
                                     n = 0
@@ -110,14 +111,14 @@ pipeline {
                                     while ((getline line < kf) > 0) {
                                         if (line ~ /^[[:space:]]*#/ || split(line, p) < 3) continue
                                         commit[n] = q "commit" q ":" q p[1] q
-                                        file[n] = q "file" q ":" q p[2] q
+                                        file[n] = (p[2] == "*") ? "" : q "file" q ":" q p[2] q
                                         detector[n] = q "DetectorName" q ":" q p[3] q
                                         n++
                                     }
                                 }
                                 {
                                     for (i = 0; i < n; i++) {
-                                        if (index(\$0, commit[i]) && index(\$0, file[i]) && index(\$0, detector[i])) { suppressed++; next }
+                                        if (index(\$0, commit[i]) && (file[i] == "" || index(\$0, file[i])) && index(\$0, detector[i])) { suppressed++; next }
                                     }
                                     print
                                 }
