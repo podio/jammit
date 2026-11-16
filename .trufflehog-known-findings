@@ -1,0 +1,5 @@
+# TruffleHog findings reviewed and accepted. Format: <full commit sha> <file path> <detector name>
+# Each entry needs a comment with the ticket and the reason it is safe.
+
+# POD-11741: False positive. The match is inside base64-encoded PNG icon data in an MHTML example asset, not a Box token.
+64c595f7005418ce7a597d00350cdea2967c4189 example/assets/silk-mhtml.css Box
